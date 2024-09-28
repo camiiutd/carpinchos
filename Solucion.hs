@@ -18,16 +18,21 @@ vuelosValidos :: AgenciaDeViajes -> Bool
 vuelosValidos [] = True 
 vuelosValidos ((a,b,c):xs) | not (vueloValido (a,b,c))= False
                            | a==b = False
-                           | vuelosRepetidos a xs || vuelosRepetidos b xs = False
+                           | vuelosRepetidosIda a xs && vuelosRepetidosVuelta b xs = False
                            | otherwise = vuelosValidos xs
 
 vueloValido :: Vuelo -> Bool
 vueloValido (a,b,c) = c > 0 && a/=b
 
-vuelosRepetidos :: Ciudad -> AgenciaDeViajes -> Bool
-vuelosRepetidos _ [] = False
-vuelosRepetidos v ((a,b,c):xs) | v == a || v == b = True
-                               | otherwise= vuelosRepetidos v xs
+vuelosRepetidosIda :: Ciudad -> AgenciaDeViajes -> Bool
+vuelosRepetidosIda _ [] = False
+vuelosRepetidosIda v ((a,b,c):xs) | v == a  = True
+                                  | otherwise= vuelosRepetidosIda v xs
+
+vuelosRepetidosVuelta :: Ciudad -> AgenciaDeViajes -> Bool
+vuelosRepetidosVuelta _ [] = False
+vuelosRepetidosVuelta v ((a,b,c):xs) | v == b = True
+                                     | otherwise= vuelosRepetidosVuelta v xs
 
 -- EJERCICIO 2
 ciudadesConectadas :: AgenciaDeViajes -> Ciudad -> [Ciudad]
