@@ -37,9 +37,38 @@ vuelosRepetidosVuelta v ((a,b,c):xs) | v == b = True
 -- EJERCICIO 2
 ciudadesConectadas :: AgenciaDeViajes -> Ciudad -> [Ciudad]
 ciudadesConectadas [] _ = []
-ciudadesConectadas ((a,b,c):xs) v | v == a = b : ciudadesConectadas xs v
-                                  | v == b = a : ciudadesConectadas xs v
-                                  | otherwise= ciudadesConectadas xs v
+ciudadesConectadas agencia v = eliminarRepetidos (conexionesTotales agencia v)
+
+conexionesTotales :: AgenciaDeViajes -> Ciudad -> [Ciudad]
+conexionesTotales [] _ = []
+conexionesTotales ((a,b,c):xs) v | a==v= b:  conexionesTotales xs v
+                                 | b==v= a:conexionesTotales xs v
+                                 | otherwise= conexionesTotales xs v
+
+soloCiudades :: AgenciaDeViajes -> [Ciudad]
+soloCiudades [] = []
+soloCiudades ((a,b,c):xs) = a : b : soloCiudades xs 
+
+eliminoRepe :: Ciudad -> [Ciudad] -> [Ciudad]
+eliminoRepe _ [] = []
+eliminoRepe c (x:xs) |c==x= eliminoRepe c xs
+                     | otherwise= x : eliminoRepe c xs
+
+quitarTodos :: (Eq t) => t -> [t] -> [t]
+quitarTodos _ [] = []
+quitarTodos m (x:xs) | m/=x = x : quitarTodos m xs
+                     | otherwise= quitarTodos m xs
+
+eliminarRepetidos :: (Eq t) => [t] -> [t]
+eliminarRepetidos [] = []
+eliminarRepetidos [x] = [x]
+eliminarRepetidos (x:xs) | pertenece x xs = x: eliminarRepetidos( quitarTodos x xs )
+                         | otherwise= x : eliminarRepetidos xs      
+
+pertenece :: (Eq t) => t -> [t] -> Bool
+pertenece _ [] = False  
+pertenece n (x:xs) | n ==x = True
+                   | otherwise= pertenece n xs
 
 
 -- EJERCICIO 3
@@ -59,25 +88,50 @@ maximaCiudad [(a,b,c)] = c
 maximaCiudad ((a,b,c):xs) | contadorDeVuelos a (soloCiudades((a,b,c):xs) ) >= maximaCiudad xs = c
                           | otherwise= maximaCiudad xs
 
-soloCiudades :: AgenciaDeViajes -> [Ciudad]
-soloCiudades [] = []
-soloCiudades ((a,b,c):xs) = a : b : soloCiudades xs 
-
 contadorDeVuelos :: Ciudad -> [Ciudad] -> Float
 contadorDeVuelos _ [] = 0
 contadorDeVuelos n (x:xs) | n == x = 1 + contadorDeVuelos n xs
                           | otherwise= contadorDeVuelos n xs
 
--- EJERCICIO 5
+-- EJERCICIO 5 preguntar si está para ser así
+--sePuedeLlegar [("A","S",2.1),("S","E",6.1),("E","A",5.0)] "A" "E"
+
 sePuedeLlegar :: AgenciaDeViajes -> Ciudad -> Ciudad -> Bool
-sePuedeLlegar vuelos origen destino = True -- Borrar y escribir el código correcto
+sePuedeLlegar [] _ _ =False                                                        --Caso Base
+sePuedeLlegar a ori des | buscoVuelos a ori des =True                              --Primero me fijo si hay un vuelo directo y devuelvo true
+                        | buscoEscalas a ori des = True                            --Busco si hay por lo menos una escala entre medio aplicando recursión tomando buscoVuelos siendo ida=escala y vuelta=destino
+                        | otherwise=False                                          --Si no cumple, devuelvo False
+
+buscoVuelos:: AgenciaDeViajes -> Ciudad -> Ciudad -> Bool
+buscoVuelos [] _ _ = False                                                         --Caso base
+buscoVuelos ((a,b,c):xs) ida vuelta | ida == a && vuelta ==b = True                --Busco vuelo directo (misma dupla)
+                                    | otherwise= buscoVuelos xs ida vuelta         --Paso recursivo
+
+buscoEscalas :: AgenciaDeViajes -> Ciudad -> Ciudad -> Bool
+buscoEscalas [] _ _ =False                                                         --Caso base
+buscoEscalas ((a,b,c):xs) escala vuelta | a == escala  = buscoVuelos xs b vuelta   --Busco la escala
+                                        | otherwise= buscoEscalas xs escala vuelta --Paso recursivo
 
 
 -- EJERCICIO 6
-duracionDelCaminoMasRapido :: AgenciaDeViajes -> Ciudad -> Ciudad -> Duracion
-duracionDelCaminoMasRapido _ _ _ = 10.0 -- Borrar y escribir el código correcto
+-- duracionDelCaminoMasRapido :: AgenciaDeViajes -> Ciudad -> Ciudad -> Duracion
+-- duracionDelCaminoMasRapido [] _ _ = 0.0 
+-- duracionDelCaminoMasRapido ((a,b,c):xs) ida vuelta 
 
+-- duraciones :: AgenciaDeViajes -> Ciudad -> Ciudad -> [Duracion] 
+-- duraciones [] _ _ = []
+-- duraciones ((a,b,c):xs) ida vuelta | buscoVuelos ((a,b,c):xs) ida vuelta = c : duraciones xs ida vuelta   --Caso vuelo directo: devuelvo c
+--                                    | buscoEscalas ((a,b,c):xs) ida vuelta =
 
+-- devuelvoDuracionIda :: AgenciaDeViajes -> Ciudad -> Duracion
+-- devuelvoDuracionIda [] _ _ = 0
+-- devuelvoDuracionIda ((a,b,c):xs) ida  |  ida == a = c 
+--                                       | otherwise= devuelvoDuracionIda xs ida 
+                                            
+-- devuelvoDuracionVuelta :: AgenciaDeViajes -> Ciudad -> Duracion
+-- devuelvoDuracionVuelta [] _ _ = 0
+-- devuelvoDuracionVuelta ((a,b,c):xs) vuelta | vuelta ==b = c 
+--                                            | otherwise= devuelvoDuracionVuelta xs vuelta
 
 -- EJERCICIO 7
 puedoVolverAOrigen :: AgenciaDeViajes -> Ciudad ->  Bool
