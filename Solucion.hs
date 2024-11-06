@@ -19,7 +19,7 @@ vuelosValidos [] = True
 vuelosValidos ((salida,llegada,t):agencias) | not (vueloValido (salida,llegada,t))= False
                                             | salida==llegada = False
                                             | vuelosRepetidosIda salida agencias && vuelosRepetidosVuelta llegada agencias = False
-                                            | not (conexionValida (salida,llegada,t)) = False
+                                            | not (conexionValida (salida,llegada,t)) = False --tengo q hacer otra funcion q lo haga recursivamente
                                             | otherwise = vuelosValidos agencias
 
 vueloValido :: Vuelo -> Bool
