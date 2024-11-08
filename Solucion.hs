@@ -15,47 +15,37 @@ type AgenciaDeViajes = [Vuelo]
 
 -- EJERCICIO 1
 vuelosValidos :: AgenciaDeViajes -> Bool
-vuelosValidos [] = True 
+vuelosValidos [] = True
+vuelosValidos [(salida,llegada,_)] = True 
 vuelosValidos ((salida,llegada,t):agencias) | not (vueloValido (salida,llegada,t))= False
-                                            | salida==llegada = False
-                                            | vuelosRepetidosIda salida agencias && vuelosRepetidosVuelta llegada agencias = False
-                                            | not (conexionValida (salida,llegada,t)) = False --tengo q hacer otra funcion q lo haga recursivamente
+                                            | pertenece (salida, llegada) (viajesSolos agencias) = False
                                             | otherwise = vuelosValidos agencias
 
 vueloValido :: Vuelo -> Bool
 vueloValido (salida,llegada,t) = t > 0 && salida/=llegada
 
-vuelosRepetidosIda :: Ciudad -> AgenciaDeViajes -> Bool
-vuelosRepetidosIda _ [] = False
-vuelosRepetidosIda vuelo ((salida,_,_):agencias) | vuelo == salida  = True
-                                                       | otherwise= vuelosRepetidosIda vuelo agencias
+pertenece :: (Eq t) => t -> [t] -> Bool
+pertenece _ [] = False  
+pertenece n (x:xs) | n ==x = True
+                   | otherwise= pertenece n xs
 
-vuelosRepetidosVuelta :: Ciudad -> AgenciaDeViajes -> Bool
-vuelosRepetidosVuelta _ [] = False
-vuelosRepetidosVuelta vuelo ((_,llegada,_):agencias) | vuelo == llegada = True
-                                                     | otherwise= vuelosRepetidosVuelta vuelo agencias
+viajesSolos :: AgenciaDeViajes -> [(Ciudad,Ciudad)]
+viajesSolos [] = []
+viajesSolos ((salida,llegada,_):agencias) = (salida,llegada) : viajesSolos agencias
 
-conexionValida ::  Vuelo -> Bool
-conexionValida (salida,llegada,t) | conexionIda (salida,llegada,t) /= conexionVuelta (salida,llegada,t) = False
-
-conexionVuelta:: Vuelo -> Ciudad
-conexionVuelta (salida,llegada,_) = salida
-
-conexionIda :: Vuelo -> Ciudad
-conexionIda (salida,llegada,_) = llegada
 
 
 -- EJERCICIO 2
 
 ciudadesConectadas :: AgenciaDeViajes -> Ciudad -> [Ciudad]
 ciudadesConectadas [] _ = []
-ciudadesConectadas agencia vuelos = eliminarRepetidos (conexionesTotales agencia vuelos)
+ciudadesConectadas agencia city = eliminarRepetidos (conexionesTotales agencia city)
 
 conexionesTotales :: AgenciaDeViajes -> Ciudad -> [Ciudad]
 conexionesTotales [] _ = []
-conexionesTotales ((salida,llegada,t):agencias) vuelo | salida==vuelo= llegada :  conexionesTotales agencias vuelo
-                                                      | llegada==vuelo = salida : conexionesTotales agencias vuelo
-                                                      | otherwise= conexionesTotales agencias vuelo
+conexionesTotales ((salida,llegada,t):agencias) city | salida==city= llegada :  conexionesTotales agencias city
+                                                      | llegada==city = salida : conexionesTotales agencias city
+                                                      | otherwise= conexionesTotales agencias city
 
 soloCiudades :: AgenciaDeViajes -> [Ciudad]
 soloCiudades [] = []
@@ -71,16 +61,13 @@ quitarTodos _ [] = []
 quitarTodos m (x:xs) | m/=x = x : quitarTodos m xs
                      | otherwise= quitarTodos m xs
 
+
 eliminarRepetidos :: (Eq t) => [t] -> [t]
 eliminarRepetidos [] = []
 eliminarRepetidos [x] = [x]
 eliminarRepetidos (x:xs) | pertenece x xs = x: eliminarRepetidos( quitarTodos x xs )
                          | otherwise= x : eliminarRepetidos xs      
 
-pertenece :: (Eq t) => t -> [t] -> Bool
-pertenece _ [] = False  
-pertenece n (x:xs) | n ==x = True
-                   | otherwise= pertenece n xs
 
 -- EJERCICIO 3
 
